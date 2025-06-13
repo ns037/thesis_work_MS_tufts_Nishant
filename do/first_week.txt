@@ -1,0 +1,324 @@
+--------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/nishantshrestha/Documents/MS_econ_Thesis/thesis_work_MS_tufts_Nishant/do/first
+> _week.txt
+  log type:  text
+ opened on:  13 Jun 2025, 09:47:24
+
+. 
+. import delimited data/one_crop_owners.csv, clear
+(encoding automatically selected: UTF-8)
+(7 vars, 9,484 obs)
+
+. 
+. // the following IV analysis is for farmers who only grow one crop.
+. 
+. //summary
+. 
+. sum total_livestock livestock_died_total burns_crop_1
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+total_live~k |      9,484     60.0272    3097.757          0     300074
+livestock_~l |      9,484    37.49916    2161.197          0     200003
+burns_crop_1 |      9,484    .0887811    .2844425          0          1
+
+. 
+. sum total_livestock livestock_died_total burns_crop_1 if year ==2018
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+total_live~k |      2,614    19.27697     28.8542          0        615
+livestock_~l |      2,614     20.3466     880.141          0      45000
+burns_crop_1 |      2,614    .1335119    .3401922          0          1
+
+. 
+. 
+. // first stage
+. reg total_livestock livestock_died_total, robust
+
+Linear regression                               Number of obs     =      9,484
+                                                F(1, 9482)        =       0.85
+                                                Prob > F          =     0.3558
+                                                R-squared         =     0.0000
+                                                Root MSE          =     3097.9
+
+--------------------------------------------------------------------------------------
+                     |               Robust
+     total_livestock | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+livestock_died_total |  -.0001965   .0002128    -0.92   0.356    -.0006136    .0002206
+               _cons |   60.03457   31.81676     1.89   0.059    -2.333102    122.4022
+--------------------------------------------------------------------------------------
+
+. 
+. // 2018 has the most number of observations, so filtering out other dates
+. reg total_livestock livestock_died_total if year == 2018, robust
+
+Linear regression                               Number of obs     =      2,614
+                                                F(1, 2612)        =      24.69
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0001
+                                                Root MSE          =     28.858
+
+--------------------------------------------------------------------------------------
+                     |               Robust
+     total_livestock | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+livestock_died_total |  -.0003396   .0000683    -4.97   0.000    -.0004736   -.0002056
+               _cons |   19.28388   .5646305    34.15   0.000     18.17671    20.39105
+--------------------------------------------------------------------------------------
+
+. 
+. 
+. ivreg2 burns_crop_1 (total_livestock = livestock_died_total), robust
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity
+
+                                                      Number of obs =     9484
+                                                      F(  1,  9482) =     0.69
+                                                      Prob > F      =   0.4058
+Total (centered) SS     =  767.2463096                Centered R2   = -1.3e+03
+Total (uncentered) SS   =          842                Uncentered R2 = -1.2e+03
+Residual SS             =  1010039.847                Root MSE      =    10.32
+
+---------------------------------------------------------------------------------
+                |               Robust
+   burns_crop_1 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+----------------+----------------------------------------------------------------
+total_livestock |     .00333    .004005     0.83   0.406    -.0045197    .0111798
+          _cons |  -.1111109   .1861472    -0.60   0.551    -.4759527     .253731
+---------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              0.345
+                                                   Chi-sq(1) P-val =    0.5567
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.000
+                         (Kleibergen-Paap rk Wald F statistic):          0.853
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         total_livestock
+Excluded instruments: livestock_died_total
+------------------------------------------------------------------------------
+
+. 
+. 
+. ivreg2 burns_crop_1 (total_livestock = livestock_died_total) if year == 2018, robust
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity
+
+                                                      Number of obs =     2614
+                                                      F(  1,  2612) =    20.31
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  302.4043611                Centered R2   =  -0.6507
+Total (uncentered) SS   =          349                Uncentered R2 =  -0.4303
+Residual SS             =  499.1733956                Root MSE      =     .437
+
+---------------------------------------------------------------------------------
+                |               Robust
+   burns_crop_1 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+----------------+----------------------------------------------------------------
+total_livestock |   .0088669   .0019668     4.51   0.000     .0050121    .0127218
+          _cons |   -.037416   .0365548    -1.02   0.306    -.1090621    .0342301
+---------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              0.698
+                                                   Chi-sq(1) P-val =    0.4034
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.280
+                         (Kleibergen-Paap rk Wald F statistic):         24.686
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         total_livestock
+Excluded instruments: livestock_died_total
+------------------------------------------------------------------------------
+
+. 
+. 
+. 
+. // the following is for farmers who grow more than one crop.
+. 
+. clear all
+
+. 
+. import delimited data/first_week.csv, clear
+(encoding automatically selected: ISO-8859-9)
+(7 vars, 43,573 obs)
+
+. 
+. 
+. 
+. // summary
+. 
+. sum herd_size livestock_died_total crop_burning
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+   herd_size |     43,573    30.87876    1452.094          0     300074
+livestock_~l |     43,573     105.048    19191.83          0    4000000
+crop_burning |     43,573    .1526404    .3596447          0          1
+
+. 
+. sum herd_size livestock_died_total crop_burning if year ==2018
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+   herd_size |     11,757    16.99974    161.5081          0      14010
+livestock_~l |     11,757    6.248022    415.1154          0      45000
+crop_burning |     11,757    .2251425    .4176939          0          1
+
+. 
+. 
+. 
+. //first stage
+. reg herd_size livestock_died_total, robust
+
+Linear regression                               Number of obs     =     43,573
+                                                F(1, 43571)       =      22.94
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0000
+                                                Root MSE          =     1452.1
+
+--------------------------------------------------------------------------------------
+                     |               Robust
+           herd_size | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+livestock_died_total |   .0000126   2.62e-06     4.79   0.000     7.42e-06    .0000177
+               _cons |   30.87744    6.95668     4.44   0.000     17.24221    44.51266
+--------------------------------------------------------------------------------------
+
+. 
+. // again 2018 has the most no. of observations
+. reg herd_size livestock_died_total if year == 2018, robust
+
+Linear regression                               Number of obs     =     11,757
+                                                F(1, 11755)       =       0.00
+                                                Prob > F          =     0.9609
+                                                R-squared         =     0.0000
+                                                Root MSE          =     161.51
+
+--------------------------------------------------------------------------------------
+                     |               Robust
+           herd_size | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+livestock_died_total |  -.0000168    .000344    -0.05   0.961    -.0006911    .0006574
+               _cons |   16.99985   1.489897    11.41   0.000      14.0794     19.9203
+--------------------------------------------------------------------------------------
+
+. 
+. 
+. //ivreg
+. ivreg2 crop_burning (herd_size = livestock_died_total), robust
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity
+
+                                                      Number of obs =    43573
+                                                      F(  1, 43571) =    30.17
+                                                      Prob > F      =   0.0000
+Total (centered) SS     =  5635.788722                Centered R2   = -1.8e+02
+Total (uncentered) SS   =         6651                Uncentered R2 = -1.5e+02
+Residual SS             =  1015541.956                Root MSE      =    4.828
+
+------------------------------------------------------------------------------
+             |               Robust
+crop_burning | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   herd_size |  -.0033157   .0006037    -5.49   0.000    -.0044988   -.0021325
+       _cons |    .255024   .0390417     6.53   0.000     .1785038    .3315443
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              1.324
+                                                   Chi-sq(1) P-val =    0.2499
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.001
+                         (Kleibergen-Paap rk Wald F statistic):         22.940
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         herd_size
+Excluded instruments: livestock_died_total
+------------------------------------------------------------------------------
+
+. 
+. ivreg2 crop_burning (herd_size = livestock_died_total) if year == 2018, robust
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics robust to heteroskedasticity
+
+                                                      Number of obs =    11757
+                                                      F(  1, 11755) =     0.00
+                                                      Prob > F      =   0.9611
+Total (centered) SS     =  2051.047886                Centered R2   = -1.6e+04
+Total (uncentered) SS   =         2647                Uncentered R2 = -1.2e+04
+Residual SS             =  32584501.53                Root MSE      =    52.65
+
+------------------------------------------------------------------------------
+             |               Robust
+crop_burning | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+   herd_size |   .3259143   6.681386     0.05   0.961    -12.76936    13.42119
+       _cons |  -5.315317   113.5122    -0.05   0.963    -227.7952    217.1646
+------------------------------------------------------------------------------
+Underidentification test (Kleibergen-Paap rk LM statistic):              0.002
+                                                   Chi-sq(1) P-val =    0.9627
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.000
+                         (Kleibergen-Paap rk Wald F statistic):          0.002
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+NB: Critical values are for Cragg-Donald F statistic and i.i.d. errors.
+------------------------------------------------------------------------------
+Hansen J statistic (overidentification test of all instruments):         0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         herd_size
+Excluded instruments: livestock_died_total
+------------------------------------------------------------------------------
+
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /Users/nishantshrestha/Documents/MS_econ_Thesis/thesis_work_MS_tufts_Nishant/do/first
+> _week.txt
+  log type:  text
+ closed on:  13 Jun 2025, 09:47:25
+--------------------------------------------------------------------------------------------------
